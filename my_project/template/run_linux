@@ -1,0 +1,4 @@
+reset
+make clean
+make
+./main

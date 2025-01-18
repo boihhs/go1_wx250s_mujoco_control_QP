@@ -1,0 +1,17 @@
+Thu Jan 16 15:13:32 2025
+ERROR: Load model error: XML Error: Schema violation: unrecognized attribute: 'kp'
+
+Element 'motor', line 0
+
+
+Thu Jan 16 20:47:26 2025
+WARNING: Nan, Inf or huge value in CTRL at ACTUATOR 1. The simulation is unstable. Time = 0.0180.
+
+Fri Jan 17 19:52:09 2025
+ERROR: Load model error: Error: keyframe 0: invalid qpos size, expected length 27
+Element name 'go1_home', id 0
+
+Fri Jan 17 19:52:37 2025
+ERROR: Load model error: Error: keyframe 0: invalid qpos size, expected length 27
+Element name 'go1_home', id 0
+

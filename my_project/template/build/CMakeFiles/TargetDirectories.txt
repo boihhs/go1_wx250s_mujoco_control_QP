@@ -1,0 +1,3 @@
+/home/leo-benaharon/Documents/mujoco-3.2.6-linux-x86_64/mujoco-3.2.6/my_project/template/build/CMakeFiles/TrajProject.dir
+/home/leo-benaharon/Documents/mujoco-3.2.6-linux-x86_64/mujoco-3.2.6/my_project/template/build/CMakeFiles/edit_cache.dir
+/home/leo-benaharon/Documents/mujoco-3.2.6-linux-x86_64/mujoco-3.2.6/my_project/template/build/CMakeFiles/rebuild_cache.dir
