@@ -113,7 +113,7 @@
   <worldbody>
     <light name="spotlight" mode="targetbodycom" target="trunk" pos="0 -1 2"/>
     <!-- GO1 -->
-    <body name="trunk" pos="0 0 0.42" childclass="go1">
+    <body name="trunk" pos="0 0 0.45" childclass="go1">
       <camera name="tracking" mode="trackcom" pos="0 -1 0.8" xyaxes="1 0 0 0 1 1"/>
       <site name="head" pos="0.3 0 0" rgba="1 0 0 1" size="0.02" group="5"/>
       <inertial pos="0.0223 0.002 -0.0005" quat="-0.00342088 0.705204 0.000106698 0.708996" mass="5.204"
@@ -246,12 +246,12 @@
       </body>
 
       <!-- wx250S -->
-      <body name="wx250s/base_link" childclass="wx250s" pos="-.05 0 .058" quat="0.0 0.0 0.0 1">
+      <body name="wx250s/base_link" childclass="wx250s" pos="0 0 .058">
         <inertial pos="-0.0380446 0.000613892 0.0193354" quat="0.509292 0.490887 -0.496359 0.503269" mass="0.538736"
           diaginertia="0.00252518 0.00211519 0.000690737"/>
         <geom quat="1 0 0 1" mesh="wx250s_1_base" class="wx250s_visual"/>
         <geom quat="1 0 0 1" mesh="wx250s_1_base" class="wx250s_collision"/>
-        <body name="wx250s/shoulder_link" pos="0 0 0.072" quat="0.0 0.0 0.0 1">
+        <body name="wx250s/shoulder_link" pos="0 0 0.072">
           <inertial pos="2.23482e-05 4.14609e-05 0.0066287" quat="0.0130352 0.706387 0.012996 0.707586" mass="0.480879"
             diaginertia="0.000588946 0.000555655 0.000378999"/>
           <joint name="waist" axis="0 0 1" range="-3.14158 3.14158"/>
