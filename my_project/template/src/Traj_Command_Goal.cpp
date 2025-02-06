@@ -1,7 +1,14 @@
-#include "Traj_Command_01M.h"
+#include "Traj_Command_Goal.h"
 
 // Function to generate the trajectory
-VectorXd Traj_Command_01M(const double t, const VectorXd& xin) {
+VectorXd Traj_Command_Goal(const double t, const VectorXd& xin, const Vector3d& goal) {
+ 
+
+    Vector3d error = (xin.segment(13, 3) - goal);
+    error = .1*error/error.norm();
+ 
+    std::cout << "\n error \n" << error << std::endl;
+
     const double dt_MPC = 0.04; // MPC time step
     const int nx = 19;          // Number of states
     const int p = 10;           // Number of horizons
@@ -24,10 +31,9 @@ VectorXd Traj_Command_01M(const double t, const VectorXd& xin) {
     double xo0 = 0.4507, yo0 = 0.0, zo0 = 0.7187;
 
     // Trajectory parameters
-    double vx = .25, vy = 0.0, w_yaw = 0.0;
-    double vxo = -.05+vx, vyo = .1+vy, vzo = -.1;
-
-
+    double vx = .25*-(error(0)-.01), vy = .25*-(error(1)-.01), w_yaw = 0.0;
+    double vxo = .25*-error(0), vyo = .25*-error(1), vzo = .25*-error(2);
+    
     // Trajectory definition
     if (t > time_stop) {
         // If time exceeds stop time, set velocities and accelerations to zero
@@ -55,22 +61,14 @@ VectorXd Traj_Command_01M(const double t, const VectorXd& xin) {
     } else {
         // Iterate through each horizon step
         for (int ind = 0; ind <= p; ++ind) {
-            // Assign velocity values
-            traj(8, ind) = w_yaw;  // Angular velocity
-            traj(9, ind) = vx;    // Linear velocity in x
-            traj(10, ind) = vy;    // Linear velocity in y
-            traj(16, ind) = vxo;   // x velocity offset
-            traj(17, ind) = vyo;   // y velocity offset
-            traj(18, ind) = vzo;   // z velocity offset
 
-            if (ind < 2) {
+
+            if (ind > -2) {
                 // First step: Update using current time
-                traj(2, ind) = w_yaw * t + dt_MPC * traj(8, ind);
-                traj(3, ind) = vx * t + dt_MPC * traj(9, ind);
-                traj(4, ind) = vy * t + dt_MPC * traj(10, ind);
-                traj(13, ind) = xo0 + vxo * t + dt_MPC * traj(16, ind);
-                traj(14, ind) = yo0 + vyo * t + dt_MPC * traj(17, ind);
-                traj(15, ind) = zo0 + vzo * t + dt_MPC * traj(18, ind);
+                
+                traj(13, ind) = goal(0);
+                traj(14, ind) = goal(1);
+                traj(15, ind) = goal(2);
                 /*
                 // Uncomment this to use xin for initial state-based updates
                 traj(2, ind) = xin(2) + dt_MPC * traj(8, ind);
@@ -97,15 +95,9 @@ VectorXd Traj_Command_01M(const double t, const VectorXd& xin) {
                 traj(15, ind) = zo0 + vzo * t + dt_MPC * traj(18, ind - 1);
             }
 
-            // Apply constraints
-            if (traj(14, ind) - traj(4, ind) > 0.5) {
-                traj(14, ind) = traj(4, ind) + 0.5;
-            }
-            if (traj(15, ind) - traj(5, ind) < -0.15) {
-                traj(15, ind) = traj(5, ind) - 0.15;
-            }
         }
     }
+    
 
     // Remove the first column and reshape
     MatrixXd traj_final = traj.block(0, 1, nx, p); // Exclude the first column

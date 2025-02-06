@@ -9,15 +9,15 @@ double dt_MPC = 0.04;
 double m_Object = 0.032492;
 
 Eigen::VectorXd MPC_QP(const Eigen::VectorXd& xin, const Eigen::VectorXd& PosVel,
-                     const Eigen::VectorXd& qArm, const Eigen::Vector3d& F_Tatile, double t) {
+                     const Eigen::VectorXd& qArm, const Eigen::Vector3d& F_Tatile, double t, const Eigen::Vector3d& goal) {
     // Initialization
     const int nx = 19; //r3 x3 w3 v3 1 po3 vo3
     const int nu = 15; //GRF12 Fo3
     const int p = 10;  // number of horizons
     
-    // Reference Generation
-    //Eigen::VectorXd xref = Traj_Command_01M(t, xin)
-    Eigen::VectorXd xref = Traj_Command_01M(t);
+    // Reference Generation/f = Traj_Command_01M(t, xin)
+    Eigen::VectorXd xref = Traj_Command_01M(t, xin);
+    //Eigen::VectorXd xref = Traj_Command_Goal(t, xin, goal);
 
     // Call the function to compute COM and MOI
     //std::pair<Eigen::Vector3d, Eigen::Matrix3d> result = inertial_params(qArm);
@@ -107,7 +107,7 @@ Eigen::VectorXd MPC_QP(const Eigen::VectorXd& xin, const Eigen::VectorXd& PosVel
     Eigen::MatrixXd A_eq = Eigen::MatrixXd::Zero(2 * p, nu * p);
     Eigen::VectorXd b_eq = Eigen::VectorXd::Zero(2 * p);
     
-    if (t <= time_stop){
+    if (t < time_stop){
         for(int ind = 0; ind < p; ++ind) {
             int phase = segment + ind ;
                 if(phase >= 10){
@@ -180,7 +180,7 @@ Eigen::VectorXd MPC_QP(const Eigen::VectorXd& xin, const Eigen::VectorXd& PosVel
 
     // Cost Function
     Eigen::VectorXd Q_diag(nx);
-    Q_diag << 2000, 2000, 2000, 500, 1000, 2000, 120, 50, 50, 10, 10, 50, 0, 150, 150, 200, 10, 10, 50;
+    Q_diag << 2000, 2000, 2000, 500, 2000, 2000, 120, 50, 50, 10, 10, 50, 0, 150, 150, 200, 10, 10, 50;
     Eigen::MatrixXd Q = Q_diag.asDiagonal();
 
     Eigen::MatrixXd R = Eigen::MatrixXd::Identity(nu, nu);

@@ -7,6 +7,6 @@
 using namespace Eigen;
 
 // Function declaration
-VectorXd Traj_Command_01M(double t);
+VectorXd Traj_Command_01M(const double t, const VectorXd& xin);
 
 #endif // TRAJ_COMMAND_01M_H

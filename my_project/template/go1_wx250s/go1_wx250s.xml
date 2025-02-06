@@ -5,11 +5,10 @@
 
   <default>
 
-    <!-- wx250S -->
+     <!-- wx250S -->
     <default class="wx250s">
         <mesh scale="0.001 0.001 0.001"/>
-        <joint axis="0 1 0" frictionloss="0.1" armature="0.1"/>
-        <position kp="50" inheritrange="1" dampratio="0.95" forcerange="-35 35"/>
+        <joint axis="0 1 0" frictionloss="0.1" armature="0.1" damping="10"/>
         <default class="wx250s_visual">
             <geom type="mesh" contype="0" conaffinity="0" density="0" group="2" material="black"/>
         </default>
@@ -344,12 +343,12 @@
     <motor class="knee" name="RR_calf" joint="RR_calf_joint"/>
 
     <!-- wx250S -->
-    <position class="wx250s" name="waist" joint="waist"/>
-    <position class="wx250s" name="shoulder" joint="shoulder"/>
-    <position class="wx250s" name="elbow" joint="elbow"/>
-    <position class="wx250s" name="forearm_roll" joint="forearm_roll"/>
-    <position class="wx250s" name="wrist_angle" joint="wrist_angle"/>
-    <position class="wx250s" name="wrist_rotate" joint="wrist_rotate"/>
+    <motor class="wx250s" name="waist" joint="waist"/>
+    <motor class="wx250s" name="shoulder" joint="shoulder"/>
+    <motor class="wx250s" name="elbow" joint="elbow"/>
+    <motor class="wx250s" name="forearm_roll" joint="forearm_roll"/>
+    <motor class="wx250s" name="wrist_angle" joint="wrist_angle"/>
+    <motor class="wx250s" name="wrist_rotate" joint="wrist_rotate"/>
     <position class="wx250s" name="gripper" joint="left_finger"/>
   </actuator>
 

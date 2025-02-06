@@ -3,7 +3,7 @@
 using namespace Eigen;
 using namespace std;
 
-double time_stop = 20;
+double time_stop = 6;
 
 // Global variables for all links
 double joint_damping = 0.01;
