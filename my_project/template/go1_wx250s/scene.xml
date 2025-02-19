@@ -20,7 +20,7 @@
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" pos="0 0 0" size="0 0 0.05" type="plane" material="groundplane"/>
-    <site name="red_sphere_site" pos="0 0 0.5" size="0.1" type="sphere" rgba="1 0 0 1"/>
+    <site name="red_sphere_site" pos="0 0 0.5" size="0.02" type="sphere" rgba="1 0 0 1"/>
 
   </worldbody>
 </mujoco>

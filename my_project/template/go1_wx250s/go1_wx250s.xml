@@ -8,7 +8,7 @@
      <!-- wx250S -->
     <default class="wx250s">
         <mesh scale="0.001 0.001 0.001"/>
-        <joint axis="0 1 0" frictionloss="0.1" armature="0.1" damping="10"/>
+        <joint axis="0 1 0" frictionloss="0.1" armature="0.1" damping="10" stiffness="5"/>
         <default class="wx250s_visual">
             <geom type="mesh" contype="0" conaffinity="0" density="0" group="2" material="black"/>
         </default>
