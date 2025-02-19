@@ -17,6 +17,6 @@ extern double dt_MPC;
 extern double m_Object;
 
 // Function Prototype for MPC_QP
-Eigen::VectorXd MPC_QP(const Eigen::VectorXd& xin, const Eigen::VectorXd& PosVel, const Eigen::VectorXd& qArm, const Eigen::Vector3d& F_Tatile, double t, const Eigen::Vector3d& goal);
+Eigen::VectorXd MPC_QP(const Eigen::VectorXd& xin, const Eigen::VectorXd& PosVel, const Eigen::VectorXd& qArm, const Eigen::Vector3d& F_Tatile, double t, const Vector3d& goal, const Vector3d& prev);
 
 #endif

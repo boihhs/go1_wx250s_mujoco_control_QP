@@ -3,7 +3,7 @@
 using namespace Eigen;
 using namespace std;
 
-double time_stop = 6;
+double time_stop = 100;
 
 // Global variables for all links
 double joint_damping = 0.01;
@@ -75,6 +75,8 @@ Vector3d gripper_link_tran_pos_body;
 // COM and MOI
 Vector3d COM_b;
 Matrix3d I_b;
+
+//VectorXd xdes;
 
 // Joint Axis are in format (x, y, z) maybe
 // Function to compute transformations for all links

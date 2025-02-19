@@ -4,7 +4,7 @@
 
 using namespace Eigen;
 
-VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, const Vector3d& goal){
+VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, const VectorXd& dqArm, const Vector3d& goal, const Vector3d& prev){
     
     VectorXd p_EF = xin.segment(13, 3);
     VectorXd V_EF = xin.segment(16, 3);
@@ -14,8 +14,8 @@ VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, co
     q_IK.segment(1, 6) = qArm; // Doing this so I don't have to change the long definations below
     //cout << q_IK.transpose();
     
-    VectorXd xref = Traj_Command_01M(t, xin);
-    //VectorXd xref = Traj_Command_Goal(t, xin, goal);
+    //VectorXd xref = Traj_Command_01M(t, xin);
+    VectorXd xref = Traj_Command_Goal2(t, xin, goal, prev);
 
     VectorXd pe_des = xref.segment(13, 3);
     VectorXd ve_des = xref.segment(16, 3);
@@ -38,11 +38,11 @@ VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, co
     MatrixXd Jv(3, 6);
     MatrixXd Jw(3, 6);
     MatrixXd Jv_inv(Jv.cols(), Jv.rows());
-    VectorXd dqArm(6);
+    VectorXd dq(6);
     Matrix3d REF_b;
     Vector3d eulEF_b;
     double i = 0;
-    while (e_pb.norm() > .002 and i < 100){
+    while (e_pb.norm() > .002 and i < 1000){
         i = i + 1;
         //std::cout << "\n i \n" << i << std::endl;
         pEF_b << cos(q_IK(1))*((199*cos(q_IK(2)))/4000 + sin(q_IK(2))/4) - (151*sin(q_IK(5))*(sin(q_IK(1))*sin(q_IK(4)) + cos(q_IK(4))*(cos(q_IK(1))*cos(q_IK(2))*sin(q_IK(3)) + cos(q_IK(1))*cos(q_IK(3))*sin(q_IK(2)))))/1000 + (151*cos(q_IK(5))*(cos(q_IK(1))*cos(q_IK(2))*cos(q_IK(3)) - cos(q_IK(1))*sin(q_IK(2))*sin(q_IK(3))))/1000 + (cos(q_IK(1))*cos(q_IK(2))*cos(q_IK(3)))/4 - (cos(q_IK(1))*sin(q_IK(2))*sin(q_IK(3)))/4,
@@ -70,15 +70,15 @@ VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, co
         Jv_inv = Jv.transpose()*(Jv*Jv.transpose()).inverse();
         //std::cout << "\n Jv_inv: \n" << Jv_inv << std::endl;
         //std::cout << "\n e_pb: \n" << e_pb << std::endl;
-        dqArm = Jv_inv*e_pb;
+        dq = Jv_inv*e_pb;
         //std::cout << "\n dqArm: \n" << dqArm << std::endl;
-        q_IK.segment(1, 6) = q_IK.segment(1, 6) + dqArm;
+        q_IK.segment(1, 6) = q_IK.segment(1, 6) + dq;
         //std::cout << "\n q_IK.segment(1, 6): \n" << q_IK.segment(1, 6).transpose() << std::endl;
         
     }
-    double factor = 1;
+
     MatrixXd kp = Eigen::MatrixXd::Zero(6, 6);
-    kp.diagonal() << 70/factor, 80/factor, 70/factor, 15/factor, 10/factor, 0;
+    kp.diagonal() << 15,   16 , 14  ,3 ,  2 ,  0;
     //std::cout << "\n dqArm: \n" << dqArm << std::endl;
     //std::cout << "\n q_IK.segment(1, 6): \n" << q_IK.segment(1, 6) << std::endl;
 
@@ -87,7 +87,8 @@ VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, co
     //std::cout << "\n kp: \n" << kp << std::endl;
 
     MatrixXd kd = Eigen::MatrixXd::Zero(6, 6);
-    kd.diagonal() << 25/factor,   25/factor,  20/factor,  5/factor,   5/factor,   1/factor;
+    kd.diagonal() << 2.5,   2.5,  2,  .5,   .5 ,  .1;
+   
     //std::cout << "\n kd: \n" << kd << std::endl;
 
     //std::cout << "\n kp*(q_IK.segment(1, 6)-qArm): \n" << kp*(q_IK.segment(1, 6)-qArm) << std::endl;

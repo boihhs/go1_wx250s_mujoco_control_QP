@@ -25,6 +25,7 @@
 #include <fstream>
 #include <random>
 #include "Traj_Command_Goal.h"
+#include <chrono>
 
 
 using namespace Eigen;
@@ -131,7 +132,7 @@ int main(int argc, const char** argv)
         std::cerr << "Error: could not open robot_position.csv for writing." << std::endl;
         return 1;
     }
-    posFile << "time,xArm,yArm,zArm,x,y,z\n";
+    posFile << "time,xArm,yArm,zArm,xtraj,ytraj,ztraj,xGoal,yGoal,zGoal,xPArm,yPArm,zPArm\n";
 
     // load and compile model
     char error[1000] = "Could not load binary model";
@@ -155,7 +156,7 @@ int main(int argc, const char** argv)
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> dist_x(-1.0, 1.0);
     std::uniform_real_distribution<double> dist_y(-1.0, 1.0);
-    std::uniform_real_distribution<double> dist_z(0.2, 1.0);  // e.g., above ground
+    std::uniform_real_distribution<double> dist_z(0.3, 1.0);  // e.g., above ground
 
     int site_id = mj_name2id(m, mjOBJ_SITE, "red_sphere_site");
     if (site_id < 0) {
@@ -177,6 +178,8 @@ int main(int argc, const char** argv)
 
     Vector3d goal;
     goal << random_x, random_y, random_z;
+    Vector3d lastPos;
+    lastPos << 0.4507, 0.0, 0.7187;
 
     // You may leave the quaternion unchanged if you do not need to update orientation.
 
@@ -248,8 +251,7 @@ int main(int argc, const char** argv)
         //  this loop will finish on time for the next frame to be rendered at 60 fps.
         //  Otherwise add a cpu timer and exit this loop when it is time to render.
         //hello = false;
-        
-        std::cout << d->site_xpos[3 * site_id + 0];
+
         mjtNum simstart = d->time;
         while( d->time - simstart < 1.0/60.0 )
         {
@@ -279,15 +281,13 @@ int main(int argc, const char** argv)
         mjtNum* vel = d->cvel + 6 * body_id; // [angular vel, vel]
         mjtNum* quat = d->xquat + 4 * body_id; //[quat]
 
-        double t = d->time;
-        if (t - lastTime > 5){
-            random_x = dist_x(gen);
-            random_y = dist_y(gen);
-            random_z = dist_z(gen);
-            lastTime = t;
-            goal << random_x, random_y, random_z;
-        }
+
+        int arm_id = mj_name2id(m, mjOBJ_BODY, "wx250s/gripper_link");
+        mjtNum* posArm = d->xpos + 3 * arm_id; // [pos]
         
+
+        double t = d->time;
+
 
         ///////////////////
         // Make input values
@@ -309,7 +309,7 @@ int main(int argc, const char** argv)
         xin(12) = 1;
       
         Vector3d F_Tatile(0, 0, 0);
-
+        Vector3d pArm(posArm[0],posArm[1],posArm[2]);
         
         //double t = 11;
 
@@ -330,11 +330,22 @@ int main(int argc, const char** argv)
         //PosVel.segment(15,3) = VelLegs.segment(6,3);
         //PosVel.segment(21,3) = VelLegs.segment(9,3);
         PosVel.segment(27,3) = VelArm;
+    
         //std::cout << "\n eular: "  << eular.transpose() << std::endl;
         // Log time and position
-        posFile << t << "," << PosVel[24] << "," << PosVel[25] << "," << PosVel[26] << "," <<  pos[0] << "," <<  pos[1] << "," <<  pos[2] << "\n";
-        xin.segment(13, 6) = PosVel.segment(24, 6);
-        x.segment(13, 6) = PosVel.segment(24, 6);
+        
+        xin.segment(13, 3) = pArm;
+        x.segment(13, 3) = PosVel.segment(24, 3);
+
+        if (t - lastTime > 10){
+            lastPos = goal;
+            random_x = dist_x(gen);
+            random_y = dist_y(gen);
+            random_z = dist_z(gen);
+            lastTime = t;
+            goal << random_x, random_y, random_z;
+            
+        }
 
         ////////////////////////
         // Run Commands
@@ -342,13 +353,20 @@ int main(int argc, const char** argv)
         
         computeInertialParams(qArm); // Compute full body inertia and COM
         
-        VectorXd xdes = Traj_Command_01M(t, xin);
-        //VectorXd xdes = Traj_Command_Goal(t, xin, goal);
+        //VectorXd xdes = Traj_Command_01M(t, xin);
+        VectorXd xdes = Traj_Command_Goal2(t, xin, goal, lastPos);
+        std::cout << "\n t: " << t << std::endl;
+        std::cout << "\n Arm traj: \n" << xdes.segment(13, 3).transpose() << std::endl;
+        
         VectorXd tauAirLeg = CartesianControl_01(t, xin, q, xdes, PosVel.segment(0,24), qArm);   
    
         //std::cout << "\n tauArm: "  << tauArm.transpose() << std::endl;
-        VectorXd F = MPC_QP(xin, PosVel, qArm, F_Tatile, t, goal);
-        
+        auto start = std::chrono::high_resolution_clock::now();
+        VectorXd F = MPC_QP(xin, PosVel, qArm, F_Tatile, t, goal, lastPos);
+        auto end = std::chrono::high_resolution_clock::now(); // End time
+        std::chrono::duration<double> duration = end - start; // Compute duration
+        posFile << t << "," << duration.count() << "," << posArm[1] << "," << posArm[2]<<   "," << xdes(13) << "," << xdes(14) << "," << xdes(15) <<   "," << goal(0) << "," << goal(1) << "," << goal(2) << "," << PosVel(24) << "," << PosVel(25) << "," << PosVel(26) << "\n";
+        std::cout << "Function execution time: " << duration.count() << " seconds \n" << std::endl;
 
         //std::cout << "\n F: " << F.transpose();
         
@@ -361,14 +379,14 @@ int main(int argc, const char** argv)
         tau.segment(0,12) = tauMain.segment(6,12) + tauAirLeg;
         
 
-        std::cout << "\n x: \n" << x.transpose() << std::endl;
-        std::cout << "\n qArm: \n" << qArm.transpose() << std::endl;
-        std::cout << "\n dqArm: \n" << dqArm.transpose() << std::endl;
-        std::cout << "\n FArm: \n" << FArm.transpose() << std::endl;
-        std::cout << "\n t: \n" << t << std::endl;
+        //std::cout << "\n x: \n" << x.transpose() << std::endl;
+        //std::cout << "\n qArm: \n" << qArm.transpose() << std::endl;
+        //std::cout << "\n dqArm: \n" << dqArm.transpose() << std::endl;
+        //std::cout << "\n FArm: \n" << FArm.transpose() << std::endl;
+        //std::cout << "\n t: \n" << t << std::endl;
         //std::cout << "\n ContactJacobian_Arm: \n" << ContactJacobian_Arm(xin,qArm, dqArm,FArm).transpose() << std::endl;
         //std::cout << "\n IK_PD_End: \n" << IK_PD_End(xin, t, qArm).transpose() << std::endl;
-        VectorXd tauArm = ContactJacobian_Arm(xin,qArm, dqArm,FArm) + IK_PD_End(xin, t, qArm, goal);
+        VectorXd tauArm = ContactJacobian_Arm(xin,qArm, dqArm,FArm) + IK_PD_End(xin, t, qArm, dqArm, goal, lastPos);
     
         
 
@@ -390,9 +408,9 @@ int main(int argc, const char** argv)
         
         }
 
-        d->site_xpos[3 * site_id + 0] = random_x;
-        d->site_xpos[3 * site_id + 1] = random_y;
-        d->site_xpos[3 * site_id + 2] = random_z;
+        d->site_xpos[3 * site_id + 0] = -50;
+        d->site_xpos[3 * site_id + 1] = -50;
+        d->site_xpos[3 * site_id + 2] = -50;
 
        // get framebuffer viewport
         mjrRect viewport = {0, 0, 0, 0};

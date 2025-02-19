@@ -80,6 +80,8 @@ extern Eigen::Vector3d gripper_link_tran_pos_body;
 // End effector translation
 extern Eigen::Vector3d end_effector_trans;
 
+//extern Eigen::VectorXd xdes;
+
 // Function to compute transformations for all links
 void computeTransformations();
 

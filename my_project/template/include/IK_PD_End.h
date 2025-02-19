@@ -9,6 +9,6 @@
 
 using namespace Eigen;
 
-VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, const Vector3d& goal);
+VectorXd IK_PD_End(const VectorXd& xin, const double t, const VectorXd& qArm, const VectorXd& dqArm, const Vector3d& goal, const Vector3d& prev);
 
 #endif

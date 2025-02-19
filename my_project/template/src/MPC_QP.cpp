@@ -9,15 +9,15 @@ double dt_MPC = 0.04;
 double m_Object = 0.032492;
 
 Eigen::VectorXd MPC_QP(const Eigen::VectorXd& xin, const Eigen::VectorXd& PosVel,
-                     const Eigen::VectorXd& qArm, const Eigen::Vector3d& F_Tatile, double t, const Eigen::Vector3d& goal) {
+                     const Eigen::VectorXd& qArm, const Eigen::Vector3d& F_Tatile, double t, const Vector3d& goal, const Vector3d& prev) {
     // Initialization
     const int nx = 19; //r3 x3 w3 v3 1 po3 vo3
     const int nu = 15; //GRF12 Fo3
     const int p = 10;  // number of horizons
     
     // Reference Generation/f = Traj_Command_01M(t, xin)
-    Eigen::VectorXd xref = Traj_Command_01M(t, xin);
-    //Eigen::VectorXd xref = Traj_Command_Goal(t, xin, goal);
+    //Eigen::VectorXd xref = Traj_Command_01M(t, xin);
+    Eigen::VectorXd xref = Traj_Command_Goal2(t, xin, goal, prev);
 
     // Call the function to compute COM and MOI
     //std::pair<Eigen::Vector3d, Eigen::Matrix3d> result = inertial_params(qArm);

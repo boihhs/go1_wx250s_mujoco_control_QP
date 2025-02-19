@@ -21,7 +21,7 @@ VectorXd Traj_Command_01M(const double t, const VectorXd& xin) {
     traj.row(12) = VectorXd::Constant(p + 1, 1.0);       // Gravity (g)
 
     // Initial offsets for positions
-    double xo0 = 0.4507, yo0 = 0.0, zo0 = 0.7187;
+    double xo0 = 0.3, yo0 = 0.0, zo0 = 0.75;
 
     // Trajectory parameters
     double vx = .25, vy = 0.0, w_yaw = 0.0;
